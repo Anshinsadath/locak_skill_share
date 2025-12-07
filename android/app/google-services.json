@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "979235485242",
+    "project_id": "local-skill-share-e06d4",
+    "storage_bucket": "local-skill-share-e06d4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:979235485242:android:0ff8ee546df1d866676703",
+        "android_client_info": {
+          "package_name": "com.example.local_skill_share"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4sVAcJoCqAnHnsLaPeNfWEdGcyzkLZAY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
