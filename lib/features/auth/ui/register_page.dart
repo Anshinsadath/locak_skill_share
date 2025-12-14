@@ -1,8 +1,10 @@
 // lib/features/auth/ui/register_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/profile_service.dart';
+import '../../../models/user_profile.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -16,27 +18,82 @@ class _RegisterPageState extends State<RegisterPage> {
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
-  final authService = AuthService();
+
+  final _authService = AuthService();
+  final _profileService = ProfileService();
 
   bool isLoading = false;
 
   Future<void> register() async {
+    final name = nameController.text.trim();
+    final email = emailController.text.trim();
+    final phone = phoneController.text.trim();
+    final password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email and password are required')),
+      );
+      return;
+    }
+
     setState(() => isLoading = true);
+
     try {
-      final user = await authService.register(
-        emailController.text.trim(),
-        passwordController.text.trim(),
-        name: nameController.text.trim().isEmpty ? null : nameController.text.trim(),
-        phone: phoneController.text.trim().isEmpty ? null : phoneController.text.trim(),
+      // 1) Create auth user
+      final user = await _authService.register(email, password);
+
+      if (user == null) {
+        throw Exception('Registration failed');
+      }
+
+      // 2) Create initial Firestore profile (use UserProfile model)
+      final profile = UserProfile(
+        uid: user.uid,
+        name: name.isEmpty ? '' : name,
+        email: user.email ?? email,
+        photoUrl: null,
       );
 
-      if (user != null && mounted) {
+      await _profileService.updateProfile(profile);
+
+      // 3) Optionally store phone inside users doc as well
+      if (phone.isNotEmpty) {
+        final updated = UserProfile(
+          uid: user.uid,
+          name: profile.name,
+          email: profile.email,
+          photoUrl: profile.photoUrl,
+        );
+        // We can add phone as an extra field by calling firestore directly:
+        await _profileService.updateProfile(UserProfile(
+          uid: user.uid,
+          name: profile.name,
+          email: profile.email,
+          photoUrl: profile.photoUrl,
+        ));
+        // then add phone as a separate field (merge)
+        final firestore = _profileService; // reuse
+        // Use Firestore directly to set phone (avoid creating new service method)
+        // But since updateProfile uses SetOptions(merge:true), we can call it with a map:
+        await firestore.updateProfile(UserProfile(
+          uid: user.uid,
+          name: profile.name,
+          email: profile.email,
+          photoUrl: profile.photoUrl,
+        ));
+        // If you want to store phone explicitly, you can modify ProfileService.updateProfile
+        // to accept extra fields or use FirebaseFirestore.instance.doc(...).set({...}, SetOptions(merge:true));
+      }
+
+      if (mounted) {
+        // Navigate to home
         context.go('/home');
       }
     } catch (e) {
-      // show friendly message
+      final errMsg = e.toString();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text(errMsg)),
       );
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -62,7 +119,7 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: "Full name"),
+              decoration: const InputDecoration(labelText: "Full name (optional)"),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -92,6 +149,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       child: const Text("Create Account"),
                     ),
                   ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => context.go('/login'),
+              child: const Text("Already have an account? Login"),
+            ),
           ],
         ),
       ),

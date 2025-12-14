@@ -1,54 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:go_router/go_router.dart';
-
-import '../../../core/services/request_service.dart';
 import '../../../models/help_request.dart';
-import '../../auth/state/user_provider.dart';
+import '../../../core/services/request_service.dart';
 
-class PostRequestPage extends ConsumerStatefulWidget {
-  const PostRequestPage({super.key});
+class EditRequestPage extends ConsumerStatefulWidget {
+  final HelpRequest request;
+
+  const EditRequestPage({super.key, required this.request});
 
   @override
-  ConsumerState<PostRequestPage> createState() => _PostRequestPageState();
+  ConsumerState<EditRequestPage> createState() => _EditRequestPageState();
 }
 
-class _PostRequestPageState extends ConsumerState<PostRequestPage> {
+class _EditRequestPageState extends ConsumerState<EditRequestPage> {
   final titleController = TextEditingController();
   final descController = TextEditingController();
   final priceController = TextEditingController();
 
   bool loading = false;
 
-  Future<void> submitRequest() async {
-    final user = ref.read(firebaseUserProvider).value;
-    if (user == null) return;
+  @override
+  void initState() {
+    super.initState();
+    titleController.text = widget.request.title;
+    descController.text = widget.request.description;
+    priceController.text = widget.request.price.toString();
+  }
 
+  Future<void> saveChanges() async {
     setState(() => loading = true);
 
     final service = ref.read(requestServiceProvider);
 
-    final request = HelpRequest(
-      id: '',
+    final updated = widget.request.copyWith(
       title: titleController.text.trim(),
       description: descController.text.trim(),
-      price: double.tryParse(priceController.text) ?? 0,
-      userId: user.uid,
-      createdAt: Timestamp.now(),
-      status: 'pending',
-      acceptedBy: null,
+      price: double.tryParse(priceController.text.trim()) ?? widget.request.price,
     );
 
-    await service.createRequest(request);
+    await service.updateRequest(updated.id, updated.toMap());
 
-    if (mounted) context.go('/home');
+    if (mounted) Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Post Request")),
+      appBar: AppBar(title: const Text("Edit Request")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -57,24 +55,24 @@ class _PostRequestPageState extends ConsumerState<PostRequestPage> {
               controller: titleController,
               decoration: const InputDecoration(labelText: "Title"),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 15),
             TextField(
               controller: descController,
               maxLines: 4,
               decoration: const InputDecoration(labelText: "Description"),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 15),
             TextField(
               controller: priceController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Price"),
+              decoration: const InputDecoration(labelText: "Price (BHD)"),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
             loading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-                    onPressed: submitRequest,
-                    child: const Text("Submit Request"),
+                    onPressed: saveChanges,
+                    child: const Text("Save Changes"),
                   )
           ],
         ),

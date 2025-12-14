@@ -2,74 +2,77 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Auth State Providers
+// Auth Providers
 import '../features/auth/state/user_provider.dart';
 
 // Auth Pages
 import '../features/auth/ui/login_page.dart';
 import '../features/auth/ui/register_page.dart';
 
-// Main App Screens
+// App Screens
 import '../features/common/bottom_nav_screen.dart';
+
+// Request Screens
 import '../features/request/ui/post_request_page.dart';
+import '../features/request/ui/request_details_page.dart';
+import '../features/request/ui/edit_request_page.dart';
+
+// Chat Screens
+import '../features/chat/ui/chat_list.dart';
 import '../features/chat/ui/chat_screen.dart';
+
+// Models
+import '../models/help_request.dart';
 
 final appRouter = GoRouter(
   debugLogDiagnostics: true,
 
-  // ---------------- REDIRECT LOGIC ----------------
   redirect: (context, state) {
     final container = ProviderScope.containerOf(context);
     final authState = container.read(firebaseUserProvider).value;
 
-    // Current path string: "/login", "/home", etc.
-    final currentPath = state.uri.toString();
+    final path = state.uri.path;
+    final isAuthPage = path == '/login' || path == '/register';
 
-    final loggingIn =
-        currentPath == '/login' ||
-        currentPath == '/register';
-
-    // If NOT LOGGED IN → force to /login
     if (authState == null) {
-      return loggingIn ? null : '/login';
+      return isAuthPage ? null : '/login';
     }
 
-    // If LOGGED IN → prevent access to login/register
-    if (loggingIn) return '/home';
-
+    if (isAuthPage) return '/home';
     return null;
   },
 
-  // ---------------- ROUTES ----------------
   routes: [
-    // AUTH ROUTES
-    GoRoute(
-      path: '/login',
-      builder: (_, __) => const LoginPage(),
-    ),
-    GoRoute(
-      path: '/register',
-      builder: (_, __) => const RegisterPage(),
-    ),
-
-    // MAIN APP (Bottom Navigation)
-    GoRoute(
-      path: '/home',
-      builder: (_, __) => const BottomNavScreen(),
-    ),
-
-    // POST REQUEST PAGE (FAB)
-    GoRoute(
-      path: '/post',
-      builder: (_, __) => const PostRequestPage(),
-    ),
-
-    // CHAT PAGE (supports query params like ?chatId=chat_1)
+    GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
+    GoRoute(path: '/register', builder: (_, __) => const RegisterPage()),
+    GoRoute(path: '/home', builder: (_, __) => const BottomNavScreen()),
+    GoRoute(path: '/post', builder: (_, __) => const PostRequestPage()),
     GoRoute(
       path: '/chat',
       builder: (context, state) {
         final chatId = state.uri.queryParameters['chatId'];
+        if (chatId == null) return const ChatListPage();
         return ChatScreen(chatId: chatId);
+      },
+    ),
+    GoRoute(
+      path: '/request-details',
+      builder: (context, state) {
+        final req = state.extra;
+        if (req == null || req is! HelpRequest) {
+          throw Exception('HelpRequest object is required in state.extra');
+        }
+        return RequestDetailsPage(request: req);
+      },
+    ),
+    GoRoute(
+      path: '/edit-request',
+      builder: (context, state) {
+        final req = state.extra;
+        if (req == null || req is! HelpRequest) {
+          throw Exception('HelpRequest object is required in state.extra');
+        }
+        return EditRequestPage(request: req);
       },
     ),
   ],

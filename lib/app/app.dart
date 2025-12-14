@@ -7,10 +7,9 @@ class LocalSkillShareApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Local Skill Share',
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.teal),
-      routerConfig: appRouter,
       debugShowCheckedModeBanner: false,
+      title: 'Local Skill Share',
+      routerConfig: appRouter,
     );
   }
 }

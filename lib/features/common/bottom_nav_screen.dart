@@ -1,91 +1,53 @@
-// lib/features/common/bottom_nav_screen.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../home/ui/home_feed.dart';
+// Pages
+import '../home/ui/home_page.dart';
 import '../chat/ui/chat_list.dart';
+import '../request/ui/my_requests_page.dart';
+import '../request/ui/accepted_requests_page.dart';
 import '../profile/ui/profile_page.dart';
-import '../request/ui/post_request_page.dart'; // <-- FIXED import (one level up)
 
-class BottomNavScreen extends ConsumerStatefulWidget {
+class BottomNavScreen extends StatefulWidget {
   const BottomNavScreen({super.key});
 
   @override
-  ConsumerState<BottomNavScreen> createState() => _BottomNavScreenState();
+  State<BottomNavScreen> createState() => _BottomNavScreenState();
 }
 
-class _BottomNavScreenState extends ConsumerState<BottomNavScreen> {
-  int _selectedIndex = 0;
+class _BottomNavScreenState extends State<BottomNavScreen> {
+  int _currentIndex = 0;
 
-  static final List<Widget> _pages = <Widget>[
-    const HomeFeed(),
-    const ChatList(),
-    // placeholder for center (we'll open Post via FAB)
-    const SizedBox.shrink(),
-    const ProfilePage(),
+  final List<Widget> _pages = const [
+    HomePage(),
+    ChatListPage(),
+    MyRequestsPage(),
+    AcceptedRequestsPage(),
+    ProfilePage(),
   ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      // center index (2) is reserved for FAB -> ignore taps
-      if (index == 2) return;
-      _selectedIndex = index > 2 ? index - 1 : index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: _pages[_selectedIndex]),
+      body: _pages[_currentIndex],
       floatingActionButton: FloatingActionButton(
-        onPressed: () => GoRouter.of(context).go('/post'),
+        onPressed: () => context.go('/post'),
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 6.0,
-        child: SizedBox(
-          height: 62,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              // left side
-              Row(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      _selectedIndex == 0 ? Icons.home : Icons.home_outlined,
-                    ),
-                    onPressed: () => _onItemTapped(0),
-                    tooltip: 'Home',
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      _selectedIndex == 1 ? Icons.chat : Icons.chat_bubble_outline,
-                    ),
-                    onPressed: () => _onItemTapped(1),
-                    tooltip: 'Chats',
-                  ),
-                ],
-              ),
-
-              // right side
-              Row(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      _selectedIndex == 2 ? Icons.person : Icons.person_outline,
-                    ),
-                    onPressed: () => _onItemTapped(3),
-                    tooltip: 'Profile',
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: 'Chats'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'My Requests'),
+          BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: 'Accepted'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
     );
   }
