@@ -7,6 +7,8 @@ class HelpRequest {
   final double price;
   final String userId;
   final Timestamp createdAt;
+  final String status;       // pending / accepted / completed
+  final String? acceptedBy;
 
   HelpRequest({
     required this.id,
@@ -15,7 +17,22 @@ class HelpRequest {
     required this.price,
     required this.userId,
     required this.createdAt,
+    required this.status,
+    required this.acceptedBy,
   });
+
+  factory HelpRequest.fromMap(Map<String, dynamic> map, String id) {
+    return HelpRequest(
+      id: id,
+      title: map['title'] ?? '',
+      description: map['description'] ?? '',
+      price: (map['price'] ?? 0).toDouble(),
+      userId: map['userId'] ?? '',
+      createdAt: map['createdAt'] ?? Timestamp.now(),
+      status: map['status'] ?? 'pending',
+      acceptedBy: map['acceptedBy'],
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -24,18 +41,27 @@ class HelpRequest {
       'price': price,
       'userId': userId,
       'createdAt': createdAt,
+      'status': status,
+      'acceptedBy': acceptedBy,
     };
   }
 
-  factory HelpRequest.fromDoc(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+  HelpRequest copyWith({
+    String? title,
+    String? description,
+    double? price,
+    String? status,
+    String? acceptedBy,
+  }) {
     return HelpRequest(
-      id: doc.id,
-      title: data['title'] ?? '',
-      description: data['description'] ?? '',
-      price: (data['price'] ?? 0).toDouble(),
-      userId: data['userId'] ?? '',
-      createdAt: data['createdAt'] ?? Timestamp.now(),
+      id: id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      userId: userId,
+      createdAt: createdAt,
+      status: status ?? this.status,
+      acceptedBy: acceptedBy ?? this.acceptedBy,
     );
   }
 }

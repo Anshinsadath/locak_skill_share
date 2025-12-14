@@ -9,7 +9,8 @@ plugins {
 android {
     namespace = "com.example.local_skill_share"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Use NDK 27 to satisfy plugin requirements (some plugins require NDK 27+).
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

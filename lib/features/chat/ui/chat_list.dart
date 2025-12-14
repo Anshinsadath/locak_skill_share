@@ -1,32 +1,75 @@
-// lib/features/chat/ui/chat_list.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ChatList extends StatelessWidget {
-  const ChatList({super.key});
+import '../../auth/state/user_provider.dart';
+import '../../../core/services/chat_service.dart';
+
+class ChatListPage extends ConsumerWidget {
+  const ChatListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Replace with Firestore chat list stream later
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(firebaseUserProvider).value;
+
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text("Not logged in")),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Chats')),
-      body: ListView.builder(
-        itemCount: 8,
-        itemBuilder: (context, index) {
-          final chatId = 'chat_$index';
-          return ListTile(
-            leading: const CircleAvatar(child: Icon(Icons.person)),
-            title: Text('Conversation with User #$index'),
-            subtitle: const Text('Last message preview...'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // navigate to chat screen with optional param
-              // We'll use a simple route /chat?chatId=chat_1
-              GoRouter.of(context).go('/chat?chatId=$chatId');
+      appBar: AppBar(title: const Text("Chats")),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: ref.read(chatServiceProvider).getUserChats(user.uid),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No chats yet"));
+          }
+
+          final chats = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: chats.length,
+            itemBuilder: (context, index) {
+              final chat = chats[index].data();
+              final chatId = chats[index].id;
+
+              final requestTitle = chat['requestTitle'] ?? 'Request';
+              final lastMessage = chat['lastMessage'] ?? '';
+              final updatedAt = chat['updatedAt'] as Timestamp?;
+
+              return ListTile(
+                title: Text(requestTitle),
+                subtitle: Text(
+                  lastMessage.isEmpty ? 'Open chat' : lastMessage,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: updatedAt != null
+                    ? Text(
+                        _formatTime(updatedAt),
+                        style: const TextStyle(fontSize: 12),
+                      )
+                    : null,
+                onTap: () {
+                  context.go('/chat?chatId=$chatId');
+                },
+              );
             },
           );
         },
       ),
     );
+  }
+
+  String _formatTime(Timestamp ts) {
+    final date = ts.toDate();
+    return "${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
   }
 }

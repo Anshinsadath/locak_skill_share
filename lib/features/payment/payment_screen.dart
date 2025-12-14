@@ -7,13 +7,11 @@ class PaymentTestScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Stripe Payment Test")),
+      appBar: AppBar(title: const Text("Stripe Test Payment")),
       body: Center(
         child: ElevatedButton(
-          onPressed: () {
-            StripeService.makePayment(500); // $5.00
-          },
-          child: const Text("Pay \$5"),
+          onPressed: () => StripeService.makePayment(500),
+          child: const Text("Pay ₹500 / "),
         ),
       ),
     );
