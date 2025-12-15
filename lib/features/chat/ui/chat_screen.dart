@@ -30,7 +30,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Chat")),
+      appBar: AppBar(
+  title: StreamBuilder<DocumentSnapshot>(
+    stream: FirebaseFirestore.instance
+        .collection('chats')
+        .doc(widget.chatId)
+        .snapshots(),
+    builder: (context, snapshot) {
+      if (!snapshot.hasData) return const Text("Chat");
+      final data = snapshot.data!.data() as Map<String, dynamic>;
+      return Text(data['requestTitle'] ?? 'Chat');
+    },
+  ),
+),
       body: Column(
         children: [
           // ---------------- MESSAGES ----------------
@@ -50,7 +62,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
                 return ListView.builder(
                   padding: const EdgeInsets.all(12),
-                  reverse: true,
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final data = messages[index].data();
