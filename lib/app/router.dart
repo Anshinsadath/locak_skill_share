@@ -2,26 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Auth Providers
 import '../features/auth/state/user_provider.dart';
-
-// Auth Pages
 import '../features/auth/ui/login_page.dart';
 import '../features/auth/ui/register_page.dart';
-
-// App Screens
 import '../features/common/bottom_nav_screen.dart';
-
-// Request Screens
 import '../features/request/ui/post_request_page.dart';
 import '../features/request/ui/request_details_page.dart';
 import '../features/request/ui/edit_request_page.dart';
-
-// Chat Screens
 import '../features/chat/ui/chat_list.dart';
 import '../features/chat/ui/chat_screen.dart';
-
-// Models
 import '../models/help_request.dart';
 
 final appRouter = GoRouter(
@@ -47,30 +36,36 @@ final appRouter = GoRouter(
     GoRoute(path: '/register', builder: (_, __) => const RegisterPage()),
     GoRoute(path: '/home', builder: (_, __) => const BottomNavScreen()),
     GoRoute(path: '/post', builder: (_, __) => const PostRequestPage()),
+
+    // ✅ CHAT ROUTE (FIXED)
     GoRoute(
       path: '/chat',
       builder: (context, state) {
         final chatId = state.uri.queryParameters['chatId'];
-        if (chatId == null) return const ChatListPage();
+        if (chatId == null) {
+          return const ChatListPage();
+        }
         return ChatScreen(chatId: chatId);
       },
     ),
+
     GoRoute(
       path: '/request-details',
       builder: (context, state) {
         final req = state.extra;
         if (req == null || req is! HelpRequest) {
-          throw Exception('HelpRequest object is required in state.extra');
+          throw Exception('HelpRequest required');
         }
         return RequestDetailsPage(request: req);
       },
     ),
+
     GoRoute(
       path: '/edit-request',
       builder: (context, state) {
         final req = state.extra;
         if (req == null || req is! HelpRequest) {
-          throw Exception('HelpRequest object is required in state.extra');
+          throw Exception('HelpRequest required');
         }
         return EditRequestPage(request: req);
       },

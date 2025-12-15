@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../auth/state/user_provider.dart';
 import '../../../core/services/chat_service.dart';
+import '../../auth/state/user_provider.dart';
+
 
 class ChatListPage extends ConsumerWidget {
   const ChatListPage({super.key});

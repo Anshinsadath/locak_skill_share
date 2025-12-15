@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 final chatServiceProvider = Provider<ChatService>((ref) {
   return ChatService();
@@ -8,9 +8,6 @@ final chatServiceProvider = Provider<ChatService>((ref) {
 class ChatService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // --------------------------------------------------
-  // Create or get chat between two users
-  // --------------------------------------------------
   Future<String> createOrGetChat(String user1, String user2) async {
     final users = [user1, user2]..sort();
 
@@ -33,9 +30,6 @@ class ChatService {
     return doc.id;
   }
 
-  // --------------------------------------------------
-  // Get user chats
-  // --------------------------------------------------
   Stream<QuerySnapshot<Map<String, dynamic>>> getUserChats(String uid) {
     return _db
         .collection('chats')
@@ -44,21 +38,15 @@ class ChatService {
         .snapshots();
   }
 
-  // --------------------------------------------------
-  // Get messages
-  // --------------------------------------------------
   Stream<QuerySnapshot<Map<String, dynamic>>> getMessages(String chatId) {
     return _db
         .collection('chats')
         .doc(chatId)
         .collection('messages')
-        .orderBy('createdAt', descending: false)
+        .orderBy('createdAt')
         .snapshots();
   }
 
-  // --------------------------------------------------
-  // Send message
-  // --------------------------------------------------
   Future<void> sendMessage({
     required String chatId,
     required String senderId,

@@ -10,11 +10,15 @@ import '../../auth/state/user_provider.dart';
 class RequestDetailsPage extends ConsumerWidget {
   final HelpRequest request;
 
-  const RequestDetailsPage({super.key, required this.request});
+  const RequestDetailsPage({
+    super.key,
+    required this.request,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(firebaseUserProvider).value;
+
     if (user == null) {
       return const Scaffold(
         body: Center(child: Text("Not logged in")),
@@ -26,6 +30,7 @@ class RequestDetailsPage extends ConsumerWidget {
 
     final isOwner = user.uid == request.userId;
     final isAccepted = request.status == 'accepted';
+    final isHelper = request.acceptedBy == user.uid;
 
     return Scaffold(
       appBar: AppBar(title: Text(request.title)),
@@ -39,7 +44,9 @@ class RequestDetailsPage extends ConsumerWidget {
             Text("Price: ${request.price}"),
             const SizedBox(height: 20),
 
-            // ---------------- ACCEPT REQUEST ----------------
+            // --------------------------------------------------
+            // ACCEPT REQUEST (USER B)
+            // --------------------------------------------------
             if (!isOwner && !isAccepted)
               ElevatedButton(
                 onPressed: () async {
@@ -48,32 +55,32 @@ class RequestDetailsPage extends ConsumerWidget {
                     helperId: user.uid,
                   );
 
+                  // ✅ PASS POSITIONAL ARGUMENTS
                   final chatId = await chatService.createOrGetChat(
-                    request.userId, // owner
-                    user.uid,        // helper
+                    request.userId, // OWNER
+                    user.uid,       // HELPER
                   );
 
-                  // ✅ FIXED ROUTE
                   context.go('/chat?chatId=$chatId');
                 },
                 child: const Text("Accept Request"),
               ),
 
-            // ---------------- OPEN CHAT ----------------
-            if (isAccepted)
+            // --------------------------------------------------
+            // OPEN CHAT (OWNER OR HELPER)
+            // --------------------------------------------------
+            if (isAccepted && (isOwner || isHelper))
               ElevatedButton(
                 onPressed: () async {
                   final otherUserId =
-                      user.uid == request.userId
-                          ? request.acceptedBy!
-                          : request.userId;
+                      isOwner ? request.acceptedBy! : request.userId;
 
+                  // ✅ PASS POSITIONAL ARGUMENTS
                   final chatId = await chatService.createOrGetChat(
                     user.uid,
                     otherUserId,
                   );
 
-                  // ✅ FIXED ROUTE
                   context.go('/chat?chatId=$chatId');
                 },
                 child: const Text("Open Chat"),
