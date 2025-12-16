@@ -48,6 +48,14 @@ final appRouter = GoRouter(
         return ChatScreen(chatId: chatId);
       },
     ),
+//     GoRoute(
+//   path: '/chat',
+//   builder: (context, state) {
+//     final chatId = state.uri.queryParameters['chatId']!;
+//     return ChatScreen(chatId: chatId);
+//   },
+// ),
+
 
     GoRoute(
       path: '/request-details',

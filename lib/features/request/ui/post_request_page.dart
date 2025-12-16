@@ -48,7 +48,15 @@ class _PostRequestPageState extends ConsumerState<PostRequestPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Post Request")),
+      appBar: AppBar(
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back),
+    onPressed: () => context.go('/home'),
+  ),
+  title: const Text("Post Request"),
+),
+
+
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

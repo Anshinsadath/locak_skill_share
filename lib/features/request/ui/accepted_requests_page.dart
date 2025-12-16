@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../state/accepted_requests_provider.dart';
 import '../../../models/help_request.dart';
+import '../../../core/widgets/gradient_app_bar.dart';
 
 class AcceptedRequestsPage extends ConsumerWidget {
   const AcceptedRequestsPage({super.key});
@@ -13,7 +14,8 @@ class AcceptedRequestsPage extends ConsumerWidget {
     final acceptedAsync = ref.watch(acceptedRequestsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Accepted Requests")),
+      appBar: const GradientAppBar(title: "Accepted Requests"),
+
       body: acceptedAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text("Error: $err")),

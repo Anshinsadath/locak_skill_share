@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/theme/app_theme.dart';
 import 'router.dart';
 
 class LocalSkillShareApp extends StatelessWidget {
@@ -7,8 +8,9 @@ class LocalSkillShareApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
       title: 'Local Skill Share',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
       routerConfig: appRouter,
     );
   }

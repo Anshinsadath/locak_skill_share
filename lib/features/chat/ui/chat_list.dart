@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/services/chat_service.dart';
 import '../../auth/state/user_provider.dart';
-
+import '../../../core/widgets/gradient_app_bar.dart';
 
 class ChatListPage extends ConsumerWidget {
   const ChatListPage({super.key});
@@ -21,7 +21,7 @@ class ChatListPage extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Chats")),
+      appBar: const GradientAppBar(title: "Chats"),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: ref.read(chatServiceProvider).getUserChats(user.uid),
         builder: (context, snapshot) {
@@ -59,7 +59,9 @@ class ChatListPage extends ConsumerWidget {
                       )
                     : null,
                 onTap: () {
-                  context.go('/chat?chatId=$chatId');
+                  // context.go('/chat?chatId=$chatId');
+                  context.push('/chat?chatId=$chatId');
+
                 },
               );
             },

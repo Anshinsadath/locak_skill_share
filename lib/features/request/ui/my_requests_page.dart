@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../models/help_request.dart';
 import '../state/user_requests_provider.dart';
 import '../../../core/services/request_service.dart';
+import '../../../core/widgets/gradient_app_bar.dart';
 
 class MyRequestsPage extends ConsumerWidget {
   const MyRequestsPage({super.key});
@@ -14,7 +15,8 @@ class MyRequestsPage extends ConsumerWidget {
     final requestsAsync = ref.watch(userRequestsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("My Requests")),
+      appBar: const GradientAppBar(title: "My Requests"),
+
       body: requestsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text("Error: $e")),
