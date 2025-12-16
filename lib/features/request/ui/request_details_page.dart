@@ -6,6 +6,8 @@ import '../../../models/help_request.dart';
 import '../../../core/services/request_service.dart';
 import '../../../core/services/chat_service.dart';
 import '../../auth/state/user_provider.dart';
+import '../../../core/widgets/gradient_button.dart';
+
 
 class RequestDetailsPage extends ConsumerWidget {
   final HelpRequest request;
@@ -48,43 +50,47 @@ class RequestDetailsPage extends ConsumerWidget {
             // ACCEPT REQUEST (USER B)
             // --------------------------------------------------
             if (!isOwner && !isAccepted)
-              ElevatedButton(
-                onPressed: () async {
-                  await requestService.acceptRequest(
-                    requestId: request.id,
-                    helperId: user.uid,
-                  );
+              GradientButton(
+  text: "Accept Request",
+  icon: Icons.check_circle,
+  onPressed: () async {
+    await requestService.acceptRequest(
+      requestId: request.id,
+      helperId: user.uid,
+    );
 
-                  // ✅ PASS POSITIONAL ARGUMENTS
-                  final chatId = await chatService.createOrGetChat(
-                    request.userId, // OWNER
-                    user.uid,       // HELPER
-                  );
+    final chatId = await chatService.createOrGetChat(
+      request.userId,
+      user.uid,
+    );
 
-                  context.go('/chat?chatId=$chatId');
-                },
-                child: const Text("Accept Request"),
-              ),
+    context.go('/chat?chatId=$chatId');
+  },
+),
+
 
             // --------------------------------------------------
             // OPEN CHAT (OWNER OR HELPER)
             // --------------------------------------------------
             if (isAccepted && (isOwner || isHelper))
-              ElevatedButton(
-                onPressed: () async {
-                  final otherUserId =
-                      isOwner ? request.acceptedBy! : request.userId;
+             GradientButton(
+  text: "Open Chat",
+  icon: Icons.chat,
+  onPressed: () async {
+    final otherUserId =
+        isOwner ? request.acceptedBy! : request.userId;
 
-                  // ✅ PASS POSITIONAL ARGUMENTS
-                  final chatId = await chatService.createOrGetChat(
-                    user.uid,
-                    otherUserId,
-                  );
+    final chatId = await chatService.createOrGetChat(
+      user.uid,
+      otherUserId,
+    );
 
-                  context.go('/chat?chatId=$chatId');
-                },
-                child: const Text("Open Chat"),
-              ),
+    // context.go('/chat?chatId=$chatId');
+    context.push('/chat?chatId=$chatId');
+
+  },
+),
+
           ],
         ),
       ),

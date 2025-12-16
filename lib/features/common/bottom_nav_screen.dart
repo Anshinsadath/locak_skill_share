@@ -7,6 +7,8 @@ import '../chat/ui/chat_list.dart';
 import '../request/ui/my_requests_page.dart';
 import '../request/ui/accepted_requests_page.dart';
 import '../profile/ui/profile_page.dart';
+import '../../core/widgets/gradient_fab.dart';
+
 
 class BottomNavScreen extends StatefulWidget {
   const BottomNavScreen({super.key});
@@ -30,11 +32,12 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_currentIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go('/post'),
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: GradientFAB(
+  icon: Icons.add,
+  onPressed: () => context.go('/post'),
+),
+
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),

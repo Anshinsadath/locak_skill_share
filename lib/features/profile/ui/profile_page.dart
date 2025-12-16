@@ -6,6 +6,7 @@ import '../../auth/state/user_provider.dart';
 import '../state/profile_provider.dart';
 import 'edit_profile_page.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/widgets/gradient_app_bar.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -21,37 +22,25 @@ class ProfilePage extends ConsumerWidget {
       error: (e, _) => Scaffold(body: Center(child: Text("Error: $e"))),
       data: (profile) {
         return Scaffold(
-          appBar: AppBar(
-            title: const Text("Profile"),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const EditProfilePage()),
-                  );
-                },
-              ),
-            ],
+          appBar: GradientAppBar(
+  title: "Profile",
+  actions: [
+    IconButton(
+      icon: const Icon(Icons.edit),
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const EditProfilePage(),
           ),
+        );
+      },
+    ),
+  ],
+),
 
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: 2,
-            onTap: (i) {
-              if (i == 0) context.go('/home');
-              if (i == 1) context.go('/chat');
-              if (i == 2) context.go('/profile');
-            },
-            items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.message), label: "Chats"),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.person), label: "Profile"),
-            ],
-          ),
+
+          
 
           body: Center(
             child: Column(

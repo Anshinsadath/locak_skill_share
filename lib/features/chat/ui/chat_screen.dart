@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../../core/services/chat_service.dart';
 import '../../auth/state/user_provider.dart';
+import '../../../core/widgets/gradient_app_bar.dart';
 
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -30,19 +31,77 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-  title: StreamBuilder<DocumentSnapshot>(
+//       appBar: AppBar(
+//   leading: IconButton(
+//     icon: const Icon(Icons.arrow_back),
+//     onPressed: () {
+//       Navigator.of(context).pop(); // ✅ SAFE
+//     },
+//   ),
+//   title: StreamBuilder<DocumentSnapshot>(
+//     stream: FirebaseFirestore.instance
+//         .collection('chats')
+//         .doc(widget.chatId)
+//         .snapshots(),
+//     builder: (context, snapshot) {
+//       if (!snapshot.hasData) return const Text("Chat");
+//       final data = snapshot.data!.data() as Map<String, dynamic>;
+//       return Text(data['requestTitle'] ?? 'Chat');
+//     },
+//   ),
+// ),
+
+      appBar: PreferredSize(
+  preferredSize: const Size.fromHeight(70),
+  child: StreamBuilder<DocumentSnapshot>(
     stream: FirebaseFirestore.instance
         .collection('chats')
         .doc(widget.chatId)
         .snapshots(),
     builder: (context, snapshot) {
-      if (!snapshot.hasData) return const Text("Chat");
-      final data = snapshot.data!.data() as Map<String, dynamic>;
-      return Text(data['requestTitle'] ?? 'Chat');
+      final title = snapshot.hasData
+          ? (snapshot.data!.data() as Map<String, dynamic>)['requestTitle'] ?? 'Chat'
+          : 'Chat';
+
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF2E6F40),
+              Color(0xFF68BA7F),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     },
   ),
 ),
+
       body: Column(
         children: [
           // ---------------- MESSAGES ----------------
@@ -72,15 +131,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
                         margin: const EdgeInsets.symmetric(vertical: 4),
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isMe ? Colors.blue : Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(10),
+                          color: isMe
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .secondary
+                                  .withOpacity(0.25),
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(16),
+                            topRight: const Radius.circular(16),
+                            bottomLeft:
+                                Radius.circular(isMe ? 16 : 0),
+                            bottomRight:
+                                Radius.circular(isMe ? 0 : 16),
+                          ),
                         ),
                         child: Text(
                           data['text'] ?? '',
                           style: TextStyle(
-                            color: isMe ? Colors.white : Colors.black,
+                            color: isMe
+                                ? Colors.white
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onBackground,
                           ),
                         ),
                       ),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:local_skill_share/features/request/state/request_provider.dart';
 import '../../request/ui/request_details_page.dart';
+import '../../../core/widgets/gradient_app_bar.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -13,9 +14,7 @@ class HomePage extends ConsumerWidget {
     final requestStream = ref.watch(requestListProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Local Skill Share"),
-      ),
+      appBar: const GradientAppBar(title: "Local Skill Share"),
       body: requestStream.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text("Error: $e")),
