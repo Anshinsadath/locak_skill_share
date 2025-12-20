@@ -7,8 +7,16 @@ class HelpRequest {
   final double price;
   final String userId;
   final Timestamp createdAt;
-  final String status;       // pending / accepted / completed
+  final String status;
   final String? acceptedBy;
+
+  // 💳 PAYMENT
+  final String paymentStatus; // unpaid | paid
+  final Timestamp? paidAt;
+  final String? paymentIntentId;
+
+  // ⏳ PAYMENT EXPIRY
+  final Timestamp? paymentExpiryAt;
 
   HelpRequest({
     required this.id,
@@ -19,18 +27,26 @@ class HelpRequest {
     required this.createdAt,
     required this.status,
     required this.acceptedBy,
+    required this.paymentStatus,
+    required this.paidAt,
+    required this.paymentIntentId,
+    required this.paymentExpiryAt,
   });
 
   factory HelpRequest.fromMap(Map<String, dynamic> map, String id) {
     return HelpRequest(
       id: id,
-      title: map['title'] ?? '',
-      description: map['description'] ?? '',
-      price: (map['price'] ?? 0).toDouble(),
-      userId: map['userId'] ?? '',
-      createdAt: map['createdAt'] ?? Timestamp.now(),
-      status: map['status'] ?? 'pending',
+      title: map['title'],
+      description: map['description'],
+      price: (map['price'] as num).toDouble(),
+      userId: map['userId'],
+      createdAt: map['createdAt'],
+      status: map['status'],
       acceptedBy: map['acceptedBy'],
+      paymentStatus: map['paymentStatus'] ?? 'unpaid',
+      paidAt: map['paidAt'],
+      paymentIntentId: map['paymentIntentId'],
+      paymentExpiryAt: map['paymentExpiryAt'],
     );
   }
 
@@ -43,25 +59,37 @@ class HelpRequest {
       'createdAt': createdAt,
       'status': status,
       'acceptedBy': acceptedBy,
+      'paymentStatus': paymentStatus,
+      'paidAt': paidAt,
+      'paymentIntentId': paymentIntentId,
+      'paymentExpiryAt': paymentExpiryAt,
     };
   }
-
   HelpRequest copyWith({
-    String? title,
-    String? description,
-    double? price,
-    String? status,
-    String? acceptedBy,
-  }) {
-    return HelpRequest(
-      id: id,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      price: price ?? this.price,
-      userId: userId,
-      createdAt: createdAt,
-      status: status ?? this.status,
-      acceptedBy: acceptedBy ?? this.acceptedBy,
-    );
-  }
+  String? title,
+  String? description,
+  double? price,
+  String? status,
+  String? acceptedBy,
+  String? paymentStatus,
+  Timestamp? paidAt,
+  Timestamp? paymentExpiryAt,
+  String? paymentIntentId,
+}) {
+  return HelpRequest(
+    id: id,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    price: price ?? this.price,
+    userId: userId,
+    createdAt: createdAt,
+    status: status ?? this.status,
+    acceptedBy: acceptedBy ?? this.acceptedBy,
+    paymentStatus: paymentStatus ?? this.paymentStatus,
+    paidAt: paidAt ?? this.paidAt,
+    paymentExpiryAt: paymentExpiryAt ?? this.paymentExpiryAt,
+    paymentIntentId: paymentIntentId ?? this.paymentIntentId,
+  );
+}
+
 }

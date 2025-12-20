@@ -1,73 +1,45 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 
+// --------------------------------------------------
+// INIT FIREBASE ADMIN
+// --------------------------------------------------
 admin.initializeApp();
+
 const db = admin.firestore();
 
-/**
- * Accept a request safely
- */
-exports.acceptRequest = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-      "unauthenticated",
-      "User must be logged in"
-    );
-  }
+// --------------------------------------------------
+// AUTO CANCEL UNPAID ACCEPTED REQUESTS
+// Runs every 1 hour
+// --------------------------------------------------
+exports.autoCancelExpiredRequests = functions.pubsub
+  .schedule("every 1 hours")
+  .onRun(async () => {
+    const now = admin.firestore.Timestamp.now();
 
-  const { requestId } = data;
-  const helperUid = context.auth.uid;
+    const snapshot = await db
+      .collection("requests")
+      .where("status", "==", "accepted")
+      .where("paymentStatus", "==", "unpaid")
+      .where("paymentExpiryAt", "<=", now)
+      .get();
 
-  if (!requestId) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "requestId required"
-    );
-  }
+    if (snapshot.empty) {
+      console.log("No expired unpaid requests found");
+      return null;
+    }
 
-  const requestRef = db.collection("requests").doc(requestId);
-  const snap = await requestRef.get();
+    const batch = db.batch();
 
-  if (!snap.exists) {
-    throw new functions.https.HttpsError("not-found", "Request not found");
-  }
+    snapshot.docs.forEach(doc => {
+      batch.update(doc.ref, {
+        status: "cancelled",
+        acceptedBy: null,
+      });
+    });
 
-  const request = snap.data();
+    await batch.commit();
 
-  // ❌ Prevent owner accepting own request
-  if (request.userId === helperUid) {
-    throw new functions.https.HttpsError(
-      "permission-denied",
-      "Cannot accept your own request"
-    );
-  }
-
-  // ❌ Already accepted
-  if (request.status !== "pending") {
-    throw new functions.https.HttpsError(
-      "failed-precondition",
-      "Request already accepted"
-    );
-  }
-
-  // ✅ Update request
-  await requestRef.update({
-    status: "accepted",
-    acceptedBy: helperUid,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    console.log(`Cancelled ${snapshot.size} expired requests`);
+    return null;
   });
-
-  // ✅ Create chat
-  const chatId = [request.userId, helperUid, requestId].sort().join("_");
-
-  await db.collection("chats").doc(chatId).set(
-    {
-      users: [request.userId, helperUid],
-      requestId: requestId,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    },
-    { merge: true }
-  );
-
-  return { chatId };
-});
