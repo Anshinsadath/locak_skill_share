@@ -16,10 +16,18 @@ class PostRequestPage extends ConsumerStatefulWidget {
 
 class _PostRequestPageState extends ConsumerState<PostRequestPage> {
   final titleController = TextEditingController();
-  final descController = TextEditingController();
+  final descController = TextEditingController(); // ✅ SINGLE description controller
   final priceController = TextEditingController();
 
   bool loading = false;
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    descController.dispose();
+    priceController.dispose();
+    super.dispose();
+  }
 
   Future<void> submitRequest() async {
     final user = ref.read(firebaseUserProvider).value;
@@ -33,30 +41,36 @@ class _PostRequestPageState extends ConsumerState<PostRequestPage> {
       id: '',
       title: titleController.text.trim(),
       description: descController.text.trim(),
-      price: double.tryParse(priceController.text) ?? 0,
+      price: double.parse(priceController.text),
       userId: user.uid,
       createdAt: Timestamp.now(),
       status: 'pending',
       acceptedBy: null,
+
+      // 💳 PAYMENT FIELDS
+      paymentStatus: 'unpaid',
+      paymentExpiryAt: null, // not accepted yet
+      paidAt: null,
+      paymentIntentId: null,
     );
 
     await service.createRequest(request);
 
-    if (mounted) context.go('/home');
+    if (mounted) {
+      context.go('/home');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-  leading: IconButton(
-    icon: const Icon(Icons.arrow_back),
-    onPressed: () => context.go('/home'),
-  ),
-  title: const Text("Post Request"),
-),
-
-
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/home'),
+        ),
+        title: const Text("Post Request"),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -75,7 +89,7 @@ class _PostRequestPageState extends ConsumerState<PostRequestPage> {
             TextField(
               controller: priceController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Price"),
+              decoration: const InputDecoration(labelText: "Price (BHD)"),
             ),
             const SizedBox(height: 20),
             loading
@@ -83,7 +97,7 @@ class _PostRequestPageState extends ConsumerState<PostRequestPage> {
                 : ElevatedButton(
                     onPressed: submitRequest,
                     child: const Text("Submit Request"),
-                  )
+                  ),
           ],
         ),
       ),
