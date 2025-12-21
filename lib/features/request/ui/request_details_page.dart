@@ -27,6 +27,7 @@ class RequestDetailsPage extends ConsumerStatefulWidget {
 class _RequestDetailsPageState extends ConsumerState<RequestDetailsPage> {
   late PaymentService paymentService;
   bool loading = false;
+  bool localAccepted = false; // For immediate UI update
 
   @override
   void initState() {
@@ -129,7 +130,7 @@ class _RequestDetailsPageState extends ConsumerState<RequestDetailsPage> {
     final chatService = ref.read(chatServiceProvider);
 
     final isOwner = user.uid == widget.request.userId;
-    final isAccepted = widget.request.status == 'accepted';
+    final isAccepted = widget.request.status == 'accepted' || localAccepted;
     final isHelper = widget.request.acceptedBy == user.uid;
 
     final paidAt = widget.request.paidAt != null
@@ -221,10 +222,22 @@ class _RequestDetailsPageState extends ConsumerState<RequestDetailsPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
+                    setState(() => localAccepted = true);
+
                     await requestService.acceptRequest(
                       requestId: widget.request.id,
                       helperId: user.uid,
                     );
+
+                    // Invalidate providers to refresh data
+                    ref.invalidate(userRequestsProvider);
+                    ref.invalidate(acceptedRequestsProvider);
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Request accepted!")),
+                      );
+                    }
 
                     final chatId =
                         await chatService.createOrGetChat(
@@ -232,7 +245,9 @@ class _RequestDetailsPageState extends ConsumerState<RequestDetailsPage> {
                       user.uid,
                     );
 
-                    context.go('/chat?chatId=$chatId');
+                    if (mounted) {
+                      context.go('/chat?chatId=$chatId');
+                    }
                   },
                   child: const Text("Accept Request"),
                 ),
