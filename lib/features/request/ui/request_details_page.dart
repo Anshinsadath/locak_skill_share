@@ -35,11 +35,15 @@ class _RequestDetailsPageState extends ConsumerState<RequestDetailsPage> {
     paymentService = PaymentService();
   }
 
-  @override
-  void dispose() {
-    paymentService.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   paymentService.dispose();
+  //   super.dispose();
+  // }
+
+
+
+
 
   // --------------------------------------------------
   // HELPERS
@@ -63,7 +67,7 @@ class _RequestDetailsPageState extends ConsumerState<RequestDetailsPage> {
     try {
       final res = await http.post(
         Uri.parse(
-            "https://interramal-launa-unled.ngrok-free.dev/create-order"),
+            "https://razorpay-backend-1-m8ss.onrender.com/create-order"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "requestId": widget.request.id,
@@ -86,7 +90,6 @@ class _RequestDetailsPageState extends ConsumerState<RequestDetailsPage> {
       signature: signature,
     );
 
-    // 🔥 FORCE UI REFRESH (THIS IS STEP 11)
     ref.invalidate(userRequestsProvider);
     ref.invalidate(acceptedRequestsProvider);
 
@@ -94,8 +97,6 @@ class _RequestDetailsPageState extends ConsumerState<RequestDetailsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Payment successful")),
       );
-
-      // ⬅ Go back so refreshed lists load
       Navigator.pop(context);
     }
   },
@@ -106,7 +107,14 @@ class _RequestDetailsPageState extends ConsumerState<RequestDetailsPage> {
   },
 );
 
-      paymentService.openCheckout(widget.request.price.toInt());
+
+
+      paymentService.openCheckout(
+  amount: widget.request.price.toInt(),
+  razorpayKey: "rzp_test_Rsjlu7xHRhL1l6", // PUBLIC KEY ONLY
+);
+
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Payment failed: $e")),
