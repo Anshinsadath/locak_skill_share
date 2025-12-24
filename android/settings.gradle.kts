@@ -18,10 +18,14 @@ pluginManagement {
 
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-    id("com.android.application") version "8.7.3" apply false
-    // START: FlutterFire Configuration
-    id("com.google.gms.google-services") version("4.3.15") apply false
-    // END: FlutterFire Configuration
+    
+    // ✅ FIX: Changed from 8.7.3 to 8.9.1 to support SDK 36 and activity-compose
+    id("com.android.application") version "8.9.1" apply false
+    
+    // ✅ UPDATE: Modern version for Google Services (Late 2025 standard)
+    id("com.google.gms.google-services") version "4.4.2" apply false
+    
+    // ✅ UPDATE: Ensure Kotlin is 2.1.0 to match your previous file
     id("org.jetbrains.kotlin.android") version "2.1.0" apply false
 }
 
