@@ -52,15 +52,22 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 20),
             isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: login,
-                    child: const Text("Login"),
-                  ),
-            TextButton(
-              onPressed: () => context.go('/register'),
-              child: const Text("Create Account"),
-            ),
+    ? const CircularProgressIndicator()
+    : ElevatedButton(
+        onPressed: login,
+        child: const Text("Login"),
+      ),
+
+TextButton(
+  onPressed: () => context.go('/forgot-password'),
+  child: const Text("Forgot Password?"),
+),
+
+TextButton(
+  onPressed: () => context.go('/register'),
+  child: const Text("Create Account"),
+),
+
           ],
         ),
       ),
